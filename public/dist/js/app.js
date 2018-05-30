@@ -46,7 +46,7 @@ $(function () {
   socket.on('chat message vers les clients', function(data){
     console.log(data);
     $('#messages').append($('<li>').html('<div class="div-message"><p class="p-pseudo">'+data.pseudo+'</p><p class="p-message">'+data.message+'</p></div>'));
-
+    $('#enLigne').text('En ligne (' +data.nbUser+ ')');
     var objDiv = document.getElementById("messages");
     objDiv.scrollTop = objDiv.scrollHeight;
     window.scrollTo(0, objDiv.scrollTop); 
