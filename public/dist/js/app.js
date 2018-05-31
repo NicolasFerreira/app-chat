@@ -5,22 +5,15 @@ $(function () {
   var userConnect = [];
 
   var pseudo = prompt('Quel est votre pseudo ?');
+
+  //check du pseudo rentré :
+  if (pseudo === ''){
+    pseudo = 'inconnu';
+  }
+
   socket.emit('nouveau_client', pseudo);
   socket.emit('disconnect', pseudo);
   document.title = pseudo + ' - ' + document.title;
-
-  
-
-  socket.on('nouveau_client', function(data) {
-    $('#messages').append('<p><em>' + data.pseudo + ' a rejoint le Chat !</em></p>'); 
-    $('#enLigne').text('En ligne (' +data.nbUser+ ')');
-  })
-
-  socket.on('disconnected', function(data) {
-    $('#messages').append('<p><em>' + data.pseudo + ' a quitté le Chat !</em></p>'); 
-    $('#enLigne').text('En ligne (' +data.nbUser+ ')');
-  })
-
 
   
 
@@ -42,6 +35,35 @@ $(function () {
     }
 
   });
+
+  // events
+
+  socket.on('message chat nouveau client', function(data) {
+    $('#messages').append('<p><em>' + data.pseudo + ' a rejoint le Chat !</em></p>'); 
+    $('#enLigne').text('En ligne (' +data.nbUser+ ')');
+
+    $('#users').html('<div id="liste"></div>')
+
+    listeUsers(data.Users)
+
+    function listeUsers(array){
+      for (var i = array.length - 1; i >= 0; i--) {
+        $('#liste').append('<li class="item-users">'+array[i]+'</li>')
+      }
+    }
+
+
+    console.log(data.Users)
+  })
+
+  socket.on('disconnected', function(data) {
+    $('#messages').append('<p><em>' + data.pseudo + ' a quitté le Chat !</em></p>'); 
+    $('#enLigne').text('En ligne (' +data.nbUser+ ')');
+
+    for (var i = data.Users.length - 1; i >= 0; i--) {
+      $('#users').append('<li>'+data.Users[i]+'</li>')
+    }
+  })
 
   socket.on('chat message vers les clients', function(data){
     console.log(data);

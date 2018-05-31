@@ -16,29 +16,39 @@ app.get('/', function(req, res){
 	res.render('index');
 });
 
-
+var Users= [];
 
 
 io.on('connection', function(socket,pseudo){
 
-
+  	
 	
 	socket.on('nouveau_client', function(pseudo) {
 		socket.pseudo = pseudo;
-		socket.broadcast.emit('nouveau_client', {pseudo:pseudo, nbUser: io.engine.clientsCount});
+		Users.push(socket.pseudo)// rajoute l'utilisateur a la liste des connectés
+		socket.emit('message chat nouveau client', {pseudo:pseudo, nbUser: io.engine.clientsCount, Users:Users});
+		socket.broadcast.emit('message chat nouveau client', {pseudo:pseudo, nbUser: io.engine.clientsCount, Users:Users});
+
+		console.log(socket.pseudo+' connected');
 		console.log(io.engine.clientsCount)
 	});
 
 	socket.on('chat message vers serveur', function(msg){
 		// io.emit('chat message', msg);
 		socket.broadcast.emit('chat message vers les clients', {pseudo: socket.pseudo, message: msg, nbUser: io.engine.clientsCount});
+
 	});
 
 	socket.on('disconnect', function(pseudo){
-		socket.broadcast.emit('disconnected', {pseudo:socket.pseudo, nbUser: io.engine.clientsCount});
+		remove(Users,socket.pseudo) // supprime la personne de la liste des connectés
+		socket.emit('disconnected', {pseudo:socket.pseudo, nbUser: io.engine.clientsCount, Users:Users});
+		socket.broadcast.emit('disconnected', {pseudo:socket.pseudo, nbUser: io.engine.clientsCount, Users:Users});
+
 		console.log(socket.pseudo+' disconnected');
 		console.log(io.engine.clientsCount)
 	});
+
+	
 
 
 });
@@ -46,3 +56,12 @@ io.on('connection', function(socket,pseudo){
 http.listen(port, function(){
 	console.log('listening on *:' + port);
 });
+
+
+
+
+// Functions :
+function remove(array, element) {
+    const index = array.indexOf(element);
+    array.splice(index, 1);
+}
